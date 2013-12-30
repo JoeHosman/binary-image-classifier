@@ -12,30 +12,34 @@ from numpy import array
 from PIL import Image
 from sklearn.feature_extraction import image
 
-maxFiles = 10
+
 
 class input_sample:
-    def __init__(self, labelname, patches):
+    def __init__(self, labelname, pixels):
         self.label = labelname
-        self.patches = patches
+        self.pixels = pixels
+
+
 
 class image_extractor:
     def __init__(self):
         return
     
-    def extractImages(self, path):
+    def extractImages(self, path, xres, yres, maxFiles):
         inputs = []
         count = 0
         for filename in os.listdir(path):
-            if (filename.rstrip('.')[0] == 'cat'):
+            stripedName = filename.split('.')[0]
+
+            if (stripedName == 'cat'):
                 label = 0
             else:
                 label = 1
             jpg = Image.open(path+'/'+filename)
-            resizedjpg = jpg.resize((256, 256), Image.ANTIALIAS)
-            jpgarr = array(jpg)
-            patches = image.extract_patches_2d(jpgarr, (2,2))
-            currentSample = input_sample(label, patches)
+            resizedjpg = jpg.resize((xres, yres), Image.ANTIALIAS)
+            jpgarr = [r for r, g, b, in resizedjpg.getdata()] + [g for r, g, b, in resizedjpg.getdata()] + [b for r, g, b, in resizedjpg.getdata()]
+            pixels = jpgarr #image.extract_pixels_2d(jpgarr, (2,2))
+            currentSample = input_sample(label, pixels)
             inputs.append(currentSample)
 
             if count > maxFiles:
